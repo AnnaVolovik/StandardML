@@ -1,25 +1,37 @@
+(* Here are some extra programming problems that can be done using the material in this module. 
+Many are similar in difficulty and content to the homework, but they are not the homework, so you are free to discuss 
+solutions, etc. on the discussion forum. Thanks to Pavel Lepin and Charilaos Skiadas for contributing most of these. *)
+
 (* 0 *)
 
 
 (* 1 - 4 *)
+(* Problems 1-4 use these type definitions: *)
 type student_id = int
 type grade = int (* must be in 0 to 100 range *)
 type final_grade = { id : student_id, grade : grade option }
 datatype pass_fail = pass | fail
 				
 (* 1 *)
+(* Write a function  pass_or_fail  of type {grade : int option, id : 'a} -> pass_fail  that takes a 
+final_grade (or, as the type indicates, a more general type) and returns pass if the grade field contains 
+SOME i for an i>= 75 (else fail). *)
 fun pass_or_fail {id=x,grade=y} =
   case y of
       SOME i => if i >= 75 then pass else fail
     | NONE => fail 
   
 (* 2 *)
+(* Using pass_or_fail as a helper function, write a function has_passed of type {grade : int option, id : 'a} 
+that returns true if and only if the the grade field contains SOME i for an i>=75 . *)
 fun has_passed x =
       case pass_or_fail x of
 	  pass => true
 	| _ => false      
 
 (* 3 *)
+(* Using has_passed as a helper function, write a function number_passed that takes a 
+list of type final_grade (or a more general type) and returns how many list elements have passing (again, >=75) grades. *)
 (* (id * grade) list -> int *)
 fun number_passed xs =
   case xs of
@@ -28,6 +40,8 @@ fun number_passed xs =
 								 
 					 
 (* 4 *)
+(* Write a function number_misgraded of type (pass_fail * final_grade) list -> int that indicates how many list elements 
+are 'mislabelled' where mislabelling means a pair (pass,x) where has_passed x is false or (fail,x) where has_passed x is true *)
 (* (𝚙𝚊𝚜𝚜_𝚏𝚊𝚒𝚕 * 𝚏𝚒𝚗𝚊𝚕_𝚐𝚛𝚊𝚍𝚎) 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 *)				       
 fun number_misgraded xs =
   case xs of
@@ -50,18 +64,23 @@ fun group_by_outcome xs =
       loop(xs,[],[])
   end
 									   
-(* 5 - 7 *)									
+(* 5 - 7 *)
+(* Problems 5-7 use these type definitions: *)							       
 datatype 'a tree = leaf 
                  | node of { value : 'a, left : 'a tree, right : 'a tree }
 datatype flag = leave_me_alone | prune_me
 
 (* 5 *)
+(* Write a function tree_height that accepts an 'a tree and evaluates to a height of this tree. 
+The height of a tree is the length of the longest path to a leaf. Thus the height of a leaf is 0. *)
+
 fun tree_height x =
   case x of
      leaf => 0
    | node {value=a,left=b,right=c} => 1 + (if tree_height b > tree_height c then tree_height b else tree_height c)
 	
 (* 6 *)
+(* Write a function sum_tree that takes an int tree and evaluates to the sum of all values in the nodes. *)
 fun sum_tree x =
   case x of
      leaf => 0
@@ -69,7 +88,9 @@ fun sum_tree x =
 
 (* 7 *)
 (* 𝚏𝚕𝚊𝚐 𝚝𝚛𝚎𝚎 -> 𝚏𝚕𝚊𝚐 𝚝𝚛𝚎𝚎 *)						
-(* 'a tree * flag -> 'a tree * flag *)								
+(* 'a tree * flag -> 'a tree * flag *)	
+(* Write a function gardener of type flag tree -> flag tree such that its structure is identical to the original 
+tree except all nodes of the input containing  are (along with all their descendants) replaced with a leaf. *)
 fun gardener x = 
   case x of
       node {value=prune_me,left=b,right=c} => leaf
@@ -268,4 +289,87 @@ fun toList x =
       no_duplicates (any_to_list x)
   end
 		    
- 
+ (* 0 *)
+(* Consider any of the extra Practice Problems from Section 1 and redo them using pattern matching. *)
+
+(* 0.1 *)
+(* Write a function 𝚊𝚕𝚝𝚎𝚛𝚗𝚊𝚝𝚎 : 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 that takes a list of numbers and adds them with alternating sign. For example 𝚊𝚕𝚝𝚎𝚛𝚗𝚊𝚝𝚎 [𝟷,𝟸,𝟹,𝟺] = 𝟷 - 𝟸 + 𝟹 - 𝟺 = -𝟸. *)
+fun alternate xs =
+  case xs of
+      [] => 0
+   |  [x] => x			  
+   | x::y::xs' => x - y + alternate xs'
+				    
+(* 0.2 *)
+(* Write a function 𝚖𝚒𝚗_𝚖𝚊𝚡 : 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 * 𝚒𝚗𝚝 that takes a non-empty list of numbers, and returns a pair (𝚖𝚒𝚗, 𝚖𝚊𝚡) of the minimum and maximum of the numbers in the list. *)				      
+fun min_max xs =
+  let fun min xs =
+	case xs of
+	   [] => NONE
+	 | x::xs' => (let val min_xs = min xs'
+		     in
+			 case min_xs of
+			     SOME min => if min < x then min_xs else SOME x
+			   | NONE => SOME x
+		     end)
+      fun max xs =
+	case xs of
+	    [] => NONE
+	  | x::xs' => (let val max_xs = max xs'
+		      in
+			  case max_xs of
+			      SOME max => if max > x then max_xs else SOME x
+			    | NONE => SOME x
+		      end)
+  in
+      (min xs, max xs)
+  end
+      
+(* 0.3 *)
+(* Write a function 𝚌𝚞𝚖𝚜𝚞𝚖 : 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 that takes a list of numbers and returns a list of the partial sums of those numbers. For example 𝚌𝚞𝚖𝚜𝚞𝚖 [𝟷,𝟺,𝟸𝟶] = [𝟷,𝟻,𝟸𝟻]. *)      
+fun cumsum xs =
+  case xs of
+      [] => []
+    | [x] => [x]
+    | x::y::xs' => x :: cumsum(x + y :: xs')
+			      
+(* 0.4 *)
+(* Write a function 𝚐𝚛𝚎𝚎𝚝𝚒𝚗𝚐 : 𝚜𝚝𝚛𝚒𝚗𝚐 𝚘𝚙𝚝𝚒𝚘𝚗 -> 𝚜𝚝𝚛𝚒𝚗𝚐 that given a string option 𝚂𝙾𝙼𝙴 name returns the string "𝙷𝚎𝚕𝚕𝚘 𝚝𝚑𝚎𝚛𝚎, ...!" where the dots would be replaced by name. Note that the name is given as an option, so if it is 𝙽𝙾𝙽𝙴 then replace the dots with "𝚢𝚘𝚞". *)			  
+fun greeting x =
+  case x of
+      SOME s => "Hello there, " ^ s ^ "!"
+    | NONE => "Hello there, you!"
+		  
+(* 0.5 *)
+(* Write a function 𝚛𝚎𝚙𝚎𝚊𝚝 : 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 * 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 𝚕𝚒𝚜𝚝 that given a list of integers and another list of nonnegative integers, repeats the integers in the first list according to the numbers indicated by the second list. For example: 𝚛𝚎𝚙𝚎𝚊𝚝 ([𝟷,𝟸,𝟹], [𝟺,𝟶,𝟹]) = [𝟷,𝟷,𝟷,𝟷,𝟹,𝟹,𝟹]. *)	   
+fun repeat (xs, ts) =
+  case (xs,ts) of
+      ([],_) => []
+    | (_,[]) => []
+    | (x::xs',t::ts') => if t = 0 then repeat(xs',ts')
+			 else x :: repeat(xs,(t-1) :: ts')
+					     
+      
+(* 0.6 *)
+(* Write a function 𝚊𝚍𝚍𝙾𝚙𝚝 : 𝚒𝚗𝚝 𝚘𝚙𝚝𝚒𝚘𝚗 * 𝚒𝚗𝚝 𝚘𝚙𝚝𝚒𝚘𝚗 -> 𝚒𝚗𝚝 𝚘𝚙𝚝𝚒𝚘𝚗 that given two "optional" integers, adds them if they are both present (returning 𝚂𝙾𝙼𝙴 of their sum), or returns 𝙽𝙾𝙽𝙴 if at least one of the two arguments is 𝙽𝙾𝙽𝙴. *)
+fun addOpt (x,y) =
+  case (x,y) of
+      (SOME x, SOME y) => SOME (x+y)
+    | _ => NONE 
+
+(* 7 *)
+(* Write a function 𝚊𝚍𝚍𝙰𝚕𝚕𝙾𝚙𝚝 : 𝚒𝚗𝚝 𝚘𝚙𝚝𝚒𝚘𝚗 𝚕𝚒𝚜𝚝 -> 𝚒𝚗𝚝 𝚘𝚙𝚝𝚒𝚘𝚗 that given a list of "optional" integers, adds those integers that are there (i.e. adds all the 𝚂𝙾𝙼𝙴 𝚒). For example: 𝚊𝚍𝚍𝙰𝚕𝚕𝙾𝚙𝚝 ([𝚂𝙾𝙼𝙴 𝟷, 𝙽𝙾𝙽𝙴, 𝚂𝙾𝙼𝙴 𝟹]) = 𝚂𝙾𝙼𝙴 𝟺. If the list does not contain any 𝚂𝙾𝙼𝙴 𝚒s in it, i.e. they are all 𝙽𝙾𝙽𝙴 or the list is empty, the function should return 𝙽𝙾𝙽𝙴. *)	   	   
+fun addAllOpt xs =
+  case xs of
+      [] => NONE
+    | x::xs' => let val  tl_sum = addAllOpt xs'
+		in
+		    case tl_sum of
+			SOME sum => (case x of
+					 SOME x => SOME (sum + x)
+				       | NONE => tl_sum)
+		      | NONE => (case x of
+				     SOME x => SOME x
+				   | NONE => NONE)
+		end
+
